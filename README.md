@@ -7,5 +7,5 @@ Two numerical results are provided. THe first one deals with asymptotically inde
 
 _References_
 
-Goix, SAbourin, Clémençon, Sparse Representation of Multivariate Extremes with Applications to Anomaly Detection, 2017
+Goix, Sabourin, Clémençon, Sparse Representation of Multivariate Extremes with Applications to Anomaly Detection, 2017
 Meyer and Wintenberger, Sparse regular variation, 2019
