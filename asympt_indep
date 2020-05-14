@@ -1,0 +1,63 @@
+# A first example: Asymtptotic independence
+
+rm(list = ls())
+library(mvtnorm)
+#setwd("/Users/nicolasmeyer/Dropbox/olivier/articles/sparse_regular_variation/v3/code")
+source(file = "sparse_regular_variation.R")
+
+rank_trans <- function(v){
+  n <- length(v)
+  res <- rep(0,n)
+  res[order(v)] <- n/(n:1)
+  return(res)
+}
+
+set.seed(123)
+
+N <- 100 # number of simulations
+N_model <- 20 # number of models
+n <- c(10^4, 5*10^4, 10^5)
+length_n <- length(n)
+d <- 40
+K <- sqrt(n) # K: k = sqrt(n)
+epsilon <- c(0.05, 0.1, 0.5)
+length_eps <- length(epsilon)
+
+error <- matrix(rep(0, length_n*2*(length_eps+1)), nrow = length_n) # the error vector
+colnames(error) <- paste( rep( c("sparse", paste("e=",epsilon)), each=2 ), rep( c("T1", "T2"), length_eps+1) )
+rownames(error) <- paste("n=", n)
+
+M_theor <- diag(d)
+
+for (j in 1:N_model){ # different models
+  A <- matrix(runif(d^2)*2-1, ncol = d)
+  Sigma <- cov2cor(t(A)%*%A)
+  
+  for (r in 1:length_n){ # different sample size
+    for (l in 1:N){ # different X for a given model
+      gauss <- rmvnorm(n[r], mean = rep(0,d), Sigma)
+      X <- t(apply(gauss, 2, rank_trans))
+      
+      sparse <- algo_sparse(X, K[r], p = 0.3)
+      M_result <- as.matrix(sparse[[1]][-(d+1), ])
+      error[r,1] <- error[r,1] + sum( tail( !duplicated( rbind(t(M_theor), t(M_result)) ), ncol(M_result) ) ) # those who should not be here
+      error[r,2] <- error[r,2] + sum( tail( !duplicated( rbind(t(M_result), t(M_theor)) ), ncol(M_theor) ) ) # those who are missing
+      
+      for (i in 1:length_eps){
+        damex <- algo_damex(X, K[r], p = 0.3, epsilon[i])
+        M_result <- as.matrix(damex[[1]][-(d+1), ])
+        error[r, 2*i+1] <- error[r, 2*i+1] + sum( tail( !duplicated( rbind(t(M_theor), t(M_result)) ), ncol(M_result) ) ) # those who should not be here
+        error[r, 2*i+2] <- error[r, 2*i+2] + sum( tail( !duplicated( rbind(t(M_result), t(M_theor)) ), ncol(M_theor) ) ) # those who are missing
+      }
+      
+    }
+  }
+}
+error/(N*N_model)
+
+
+
+
+
+
+
