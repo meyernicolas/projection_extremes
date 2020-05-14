@@ -3,6 +3,7 @@
 rm(list = ls())
 #setwd("/Users/nicolasmeyer/Dropbox/olivier/articles/sparse_regular_variation/v3/code")
 source(file = "sparse_regular_variation.R")
+# "sparse_regular_variation.R" corresponds to auxiliary_functions
 
 set.seed(345)
 
