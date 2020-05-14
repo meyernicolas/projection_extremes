@@ -1,0 +1,68 @@
+# A third example: Linear combinations
+
+rm(list = ls())
+#setwd("/Users/nicolasmeyer/Dropbox/olivier/articles/sparse_regular_variation/v3/code")
+source(file = "sparse_regular_variation.R")
+
+set.seed(345)
+
+N <- 100 # number of simulations
+n <- c(10^4, 5*10^4, 10^5)
+length_n <- length(n)
+K <- sqrt(n)
+
+d <- 60
+s <- 20
+dbis <- 3
+a <- c(7,6,4)
+a <- a/sum(a)
+
+subsets <- matrix(rep(0, length_n*(dbis+1)), nrow = length_n) # the error vector
+colnames(subsets) <- c("three-dim", "two-dim", "one-dim", "other")
+rownames(subsets) <- paste("n=", n)
+
+M_theor <- matrix( rep(0, d*s), ncol = s, nrow = d)
+for (i in 1:s){
+  M_theor[(3*i-2):(3*i), i] <- 1
+}
+# Our aim is to recover the s = 20 three-dimensional subsets
+
+M_two_dim <- matrix( rep(0, d*s), ncol = s, nrow = d)
+for (i in 1:s){
+  M_two_dim[(3*i-2):(3*i-1), i] <- 1
+}
+
+M_one_dim <- matrix( rep(0, d*s), ncol = s, nrow = d)
+for (i in 1:s){
+  M_one_dim[3*i-2, i] <- 1
+}
+
+ptm <- proc.time()
+for (r in 1:length_n){
+  for (l in 1:N){
+    X <- matrix(rep(0,n[r]*d), nrow = d)
+    
+    for (i in 1:s){
+      # the construction of the data matrix
+      P1 <- a[1]*1/runif(n[r])
+      P2 <- a[2]*P1 + 1/runif(n[r])^(1/2)
+      P3 <- a[3]*P1 + 1/runif(n[r])^(1/2)
+      X[(3*i-2):(3*i), ] <- a*rbind(P1,P2,P3)
+    }
+    
+    sparse <- algo_sparse(X, K[r], p = 0.3)
+    M_result <- sparse[[1]][-(d+1), ]
+    sub_3 <- sum( tail( duplicated( rbind(t(M_theor), t(M_result)) ), ncol(M_result) ) ) # the three-dim that are present
+    sub_2 <- sum( tail( duplicated( rbind(t(M_two_dim), t(M_result)) ), ncol(M_result) ) ) # the two-dim that are present
+    sub_1 <- sum( tail( duplicated( rbind(t(M_one_dim), t(M_result)) ), ncol(M_result) ) ) # the two-dim that are present
+    subsets[r,1] <- subsets[r,1] + sub_3
+    subsets[r,2] <- subsets[r,2] + sub_2
+    subsets[r,3] <- subsets[r,3] + sub_1
+    subsets[r,4] <- subsets[r,4] + ncol(M_result) - (sub_1 + sub_2 + sub_3)
+
+  }
+}
+proc.time() - ptm
+subsets/(N*s)
+
+
