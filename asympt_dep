@@ -50,17 +50,31 @@ for (r in 1:length_n){
       X[2*s2 + (3*i-2):(3*i), ] <- rbind(A,B,C)
     }
     
+    # alpha = 1
     sparse <- algo_sparse(X, K[r], p = 0.3)
-    M_result <- sparse[[1]][-(d+1), ]
+    M_result <- as.matrix(sparse[[1]][-(d+1), ])
     error[r,1] <- error[r,1] + sum( tail( !duplicated( rbind(t(M_theor), t(M_result)) ), ncol(M_result) ) ) # those who should not be here
     error[r,2] <- error[r,2] + sum( tail( !duplicated( rbind(t(M_result), t(M_theor)) ), ncol(M_theor) ) ) # those who are missing
+    
+    # alpha = 2
+    sparse_2 <- algo_sparse(X^2, K[r], p = 0.3)
+    M_result <- as.matrix(sparse_2[[1]][-(d+1), ])
+    error[r,3] <- error[r,3] + sum( tail( !duplicated( rbind(t(M_theor), t(M_result)) ), ncol(M_result) ) ) # those who should not be here
+    error[r,4] <- error[r,4] + sum( tail( !duplicated( rbind(t(M_result), t(M_theor)) ), ncol(M_theor) ) ) # those who are missing
+    
+    # alpha = 1/2
+    sparse_sq2 <- algo_sparse(X^(1/2), K[r], p = 0.3)
+    M_result <- as.matrix(sparse_sq2[[1]][-(d+1), ])
+    error[r,5] <- error[r,5] + sum( tail( !duplicated( rbind(t(M_theor), t(M_result)) ), ncol(M_result) ) ) # those who should not be here
+    error[r,6] <- error[r,6] + sum( tail( !duplicated( rbind(t(M_result), t(M_theor)) ), ncol(M_theor) ) ) # those who are missing
+
     
     damex <- list()
     for (j in 1:length_eps){
     damex[[j]] <- algo_damex(X, K[r], p = 0.3, epsilon[j])
     M_result <- as.matrix(damex[[j]][[1]][ -(d+1), ])
-    error[r, 2*j+1] <- error[r, 2*j+1] + sum( tail( !duplicated( rbind(t(M_theor), t(M_result)) ), ncol(M_result) ) ) # those who should not be here
-    error[r, 2*j+2] <- error[r, 2*j+2] + sum( tail( !duplicated( rbind(t(M_result), t(M_theor)) ), ncol(M_theor) ) ) # those who are missing
+    error[r, 2*j+5] <- error[r, 2*j+5] + sum( tail( !duplicated( rbind(t(M_theor), t(M_result)) ), ncol(M_result) ) ) # those who should not be here
+    error[r, 2*j+6] <- error[r, 2*j+6] + sum( tail( !duplicated( rbind(t(M_result), t(M_theor)) ), ncol(M_theor) ) ) # those who are missing
     }
 
   }
