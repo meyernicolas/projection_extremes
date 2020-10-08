@@ -94,7 +94,7 @@ algo_sparse <- function(X, K, p){
     
     # we keep the most represented subsets
     relevant <- M[d+1, ] > p*K[j]/ncol(M)
-    result[[j]] <- M[ ,relevant]
+    result[[j]] <- as.matrix(M[ ,relevant])
   }
   return(result)
 }
